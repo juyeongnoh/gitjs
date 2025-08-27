@@ -28,7 +28,6 @@ class Index {
       );
 
       if (pathCompareFunction !== 0) {
-        console.log(a.entryPathname, b.entryPathname, pathCompareFunction);
         return pathCompareFunction;
       }
 
