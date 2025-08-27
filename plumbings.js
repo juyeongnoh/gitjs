@@ -5,22 +5,16 @@
 const crypto = require("crypto");
 const zlib = require("zlib");
 const fs = require("fs");
-const { Index, Entry } = require("./types");
+
+const Index = require("./types/Index");
+const Entry = require("./types/Entry");
 
 function initIndex() {
   const index = new Index();
-  index.setSignature("DIRC");
-  index.setVersion(2);
-  index.entryCount = 0;
-
-  const header = index.getHeaderBuffer();
-  const checksum = crypto.createHash("sha1").update(header).digest();
-
-  const final = Buffer.concat([header, checksum]);
-  fs.writeFileSync(".git/index", final);
+  fs.writeFileSync(".git/index", index.toBuffer());
 }
 
-function hashObject(string, type = "blob") {
+function hashObject(string, type = "blob", mode = "write") {
   if (
     type !== "blob" &&
     type !== "commit" &&
@@ -30,89 +24,67 @@ function hashObject(string, type = "blob") {
     throw new Error("Invalid type");
   }
 
-  const bytes = string.length;
+  const bytes = Buffer.byteLength(string, "utf8");
   const header = `${type} ${bytes}\0`;
-
-  const hash = crypto
+  const sha = crypto
     .createHash("SHA1")
     .update(header + string)
     .digest("hex");
 
-  // 저장 (-w 플래그가 주어졌다고 가정)
-  const dirName = hash.slice(0, 2);
-  const fileName = hash.slice(2);
-  const compressed = zlib.deflateSync(Buffer.from(header + string));
+  if (mode === "write") {
+    const dirName = sha.slice(0, 2);
+    const fileName = sha.slice(2);
+    const compressed = zlib.deflateSync(Buffer.from(header + string));
 
-  if (!fs.existsSync(`.git/objects/${dirName}`)) {
-    fs.mkdirSync(`.git/objects/${dirName}`, { recursive: true });
+    if (!fs.existsSync(`.git/objects/${dirName}`)) {
+      fs.mkdirSync(`.git/objects/${dirName}`, { recursive: true });
+    }
+
+    fs.writeFileSync(`.git/objects/${dirName}/${fileName}`, compressed);
   }
 
-  fs.writeFileSync(`.git/objects/${dirName}/${fileName}`, compressed);
-
-  return hash;
+  return sha;
 }
 
-function updateIndex(filePath) {
-  console.log(`updateIndex called for: ${filePath}`);
-
-  if (!fs.existsSync(filePath)) {
-    throw new Error(`File not found: ${filePath}`);
+function updateIndex(filePathname, hash) {
+  if (!fs.existsSync(filePathname)) {
+    throw new Error(`File not found: ${filePathname}`);
   }
 
-  const fileContent = fs.readFileSync(filePath);
-  const hash = hashObject(fileContent, "blob");
-
-  // 현재 index 읽기
   const currentIndex = getCurrentIndex();
-  console.log(`Current index has ${currentIndex.entryCount} entries`);
-
-  // 기존 엔트리들 출력
-  console.log("Current entries:");
-  currentIndex.entries.forEach((entry, i) => {
-    console.log(
-      `  ${i}: ${entry.entryPathname} (${entry.objectName.slice(0, 8)})`
-    );
-  });
-
-  // 새 entry 생성 및 추가
-  const entry = Entry.fromFile(filePath, hash);
-  console.log(
-    `Creating entry for: ${entry.entryPathname} (${entry.objectName.slice(
-      0,
-      8
-    )})`
+  const fileStats = fs.lstatSync(filePathname);
+  const entry = Entry.fromFileStats(
+    fileStats,
+    hash,
+    filePathname.length,
+    filePathname
   );
   currentIndex.addEntry(entry);
-  console.log(`After adding, index has ${currentIndex.entryCount} entries`);
 
   // index 파일 업데이트
-  writeIndex(currentIndex);
+  fs.writeFileSync(".git/index", currentIndex.toBuffer());
+}
+
+function printIndex() {
+  const currentIndex = getCurrentIndex();
+  console.table(currentIndex.entries);
 }
 
 function getCurrentIndex() {
   // index 파일이 없으면 새로운 빈 index 반환
   if (!fs.existsSync(".git/index")) {
-    const index = new Index();
-    index.setSignature("DIRC");
-    index.setVersion(2);
-    return index;
+    initIndex();
   }
 
   const indexFile = fs.readFileSync(".git/index");
   const index = new Index();
+  console.log("NEW INDEX CALLED!");
 
-  let off = 0;
+  // Signature, Version 스킵
+  let off = 8;
 
-  // 헤더 파싱
-  const signature = indexFile.toString("utf8", off, off + 4);
-  off += 4; // 'DIRC'
-  const version = indexFile.readUInt32BE(off);
-  off += 4;
   const entryCount = indexFile.readUInt32BE(off);
   off += 4;
-
-  index.setSignature(signature);
-  index.setVersion(version);
 
   for (let i = 0; i < entryCount; i++) {
     // 범위 체크
@@ -134,8 +106,19 @@ function getCurrentIndex() {
     off += 4;
     const ino = indexFile.readUInt32BE(off);
     off += 4;
+
     const mode = indexFile.readUInt32BE(off);
+    const entryType = (() => {
+      let bit = mode & 0b00000000000000001111000000000000;
+      bit >>= 12;
+      if (bit === 0b1000) return "REGULAR_FILE";
+      else if (bit === 0b1010) return "SYMLINK";
+      else if (bit === 0b1110) return "GITLINK";
+    })();
+
+    const filePermission = mode & 0b00000000000000000000000111111111;
     off += 4;
+
     const uid = indexFile.readUInt32BE(off);
     off += 4;
     const gid = indexFile.readUInt32BE(off);
@@ -151,20 +134,33 @@ function getCurrentIndex() {
     // flags (2 bytes)
     if (off + 2 > indexFile.length) break;
     const flags = indexFile.readUInt16BE(off);
+    const assumeValid = (() => {
+      let bit = flags & 0b1000000000000000;
+      bit >>= 15;
+      return bit === 1;
+    })();
+    const extended = (() => {
+      let bit = flags & 0b0100000000000000;
+      bit >>= 14;
+      return bit === 1;
+    })();
+    const stage = (() => {
+      let bit = flags & 0b0011000000000000;
+      bit >>= 12;
+      return bit;
+    })();
+    const nameLength = flags & 0b0000111111111111;
     off += 2;
-
-    // 파일명 길이는 flags의 하위 12비트
-    const nameLength = flags & 0xfff;
 
     // 파일명 읽기
     if (off + nameLength > indexFile.length) break;
-    const name = indexFile.toString("utf8", off, off + nameLength);
+    const name = indexFile.toString("utf8", off, off + nameLength + 1);
     off += nameLength;
 
     // null terminator 건너뛰기
-    if (off < indexFile.length && indexFile[off] === 0) {
-      off++;
-    }
+    // if (off < indexFile.length && indexFile[off] === 0) {
+    //   off++;
+    // }
 
     // 8-byte 정렬까지 패딩 건너뛰기
     const entryStart = off - nameLength - 1 - 2 - 20 - 40; // entry 시작점 계산
@@ -178,13 +174,16 @@ function getCurrentIndex() {
       mtimeNsec,
       dev,
       ino,
-      mode,
+      entryType,
+      filePermission,
       uid,
       gid,
       fileSize,
       objectName: sha.toString("hex"),
-      flags,
-      extendedFlags: 0,
+      assumeValid,
+      extended,
+      stage,
+      nameLength,
       entryPathname: name,
     });
 
@@ -192,22 +191,6 @@ function getCurrentIndex() {
   }
 
   return index;
-}
-
-function writeIndex(index) {
-  const entryBuffers = index.entries.map((entry) => entry.getBuffer());
-  const entriesBuffer = Buffer.concat(entryBuffers);
-
-  // 헤더 + 엔트리들
-  const header = index.getHeaderBuffer();
-  const content = Buffer.concat([header, entriesBuffer]);
-
-  // 체크섬 계산
-  const checksum = crypto.createHash("sha1").update(content).digest();
-
-  // 최종 파일 생성
-  const final = Buffer.concat([content, checksum]);
-  fs.writeFileSync(".git/index", final);
 }
 
 function catFile(hash) {
@@ -244,6 +227,7 @@ module.exports = {
   initIndex,
   hashObject,
   updateIndex,
+  printIndex,
   catFile,
   readEntriesFromIndex: getCurrentIndex,
 };

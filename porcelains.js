@@ -6,7 +6,8 @@ const { hashObject, updateIndex, initIndex } = require("./plumbings");
 
 /**
  * init()
- * Git의 핵심은 HEAD, index, objects/, refs/
+ * Creates Git Skeleton structure
+ * HEAD, index, objects/, refs/
  */
 const init = () => {
   // .git이 존재하지 않는 경우에만 initialize
@@ -26,20 +27,17 @@ const init = () => {
     fs.mkdirSync(".git/refs/tags");
 
     fs.writeFileSync(".git/HEAD", HEAD);
-
-    initIndex();
   }
 };
 
 /**
- *
- * @param  {string[]} files
+ * @param  {string[]} filePathnames
  */
-const add = (files) => {
-  files.forEach((file) => {
-    const fileString = fs.readFileSync(file).toString();
-    const hash = hashObject(fileString);
-    updateIndex(file, hash);
+const add = (filePathnames) => {
+  filePathnames.forEach((filePathname) => {
+    const fileString = fs.readFileSync(filePathname).toString();
+    const hash = hashObject(fileString, "blob");
+    updateIndex(filePathname, hash);
   });
 };
 

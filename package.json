@@ -1,0 +1,15 @@
+{
+  "name": "gitjs",
+  "version": "0.0.1",
+  "description": "The Git commands implemented in JavaScript.",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch"
+  },
+  "author": "Juyeong \"James\" Noh",
+  "license": "ISC",
+  "devDependencies": {
+    "jest": "^30.0.5"
+  }
+}

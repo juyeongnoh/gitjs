@@ -15,3 +15,9 @@ To understand how Git works under the hood by implmenting my own version.
 - push
 - branch
 - clone
+
+## How to test
+
+```bash
+npm run test
+```

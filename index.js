@@ -1,6 +1,6 @@
 const readline = require("readline");
 const { init, add } = require("./porcelains");
-const { catFile } = require("./plumbings");
+const { catFile, printIndex } = require("./plumbings");
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -16,5 +16,7 @@ rl.on("line", (input) => {
   } else if (input.startsWith("cat-file")) {
     const hash = input.split(" ")[1];
     catFile(hash);
+  } else if (input.startsWith("print-index")) {
+    printIndex();
   }
 });
