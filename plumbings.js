@@ -67,7 +67,7 @@ function updateIndex(filePathname, hash) {
 
 function printIndex() {
   const currentIndex = getCurrentIndex();
-  console.table(currentIndex.entries);
+  currentIndex.prettyPrint();
 }
 
 function getCurrentIndex() {
@@ -78,36 +78,34 @@ function getCurrentIndex() {
 
   const indexFile = fs.readFileSync(".git/index");
   const index = new Index();
-  console.log("NEW INDEX CALLED!");
 
   // Signature, Version 스킵
-  let off = 8;
-
-  const entryCount = indexFile.readUInt32BE(off);
-  off += 4;
+  let offset = 8;
+  const entryCount = indexFile.readUInt32BE(offset);
+  offset += 4;
 
   for (let i = 0; i < entryCount; i++) {
     // 범위 체크
-    if (off + 62 > indexFile.length) {
+    if (offset + 62 > indexFile.length) {
       console.warn(`Entry ${i}: Not enough data remaining`);
       break;
     }
 
-    const ctimeSec = indexFile.readUInt32BE(off);
-    off += 4;
-    const ctimeNsec = indexFile.readUInt32BE(off);
-    off += 4;
-    const mtimeSec = indexFile.readUInt32BE(off);
-    off += 4;
-    const mtimeNsec = indexFile.readUInt32BE(off);
-    off += 4;
+    const ctimeSec = indexFile.readUInt32BE(offset);
+    offset += 4;
+    const ctimeNsec = indexFile.readUInt32BE(offset);
+    offset += 4;
+    const mtimeSec = indexFile.readUInt32BE(offset);
+    offset += 4;
+    const mtimeNsec = indexFile.readUInt32BE(offset);
+    offset += 4;
 
-    const dev = indexFile.readUInt32BE(off);
-    off += 4;
-    const ino = indexFile.readUInt32BE(off);
-    off += 4;
+    const dev = indexFile.readUInt32BE(offset);
+    offset += 4;
+    const ino = indexFile.readUInt32BE(offset);
+    offset += 4;
 
-    const mode = indexFile.readUInt32BE(off);
+    const mode = indexFile.readUInt32BE(offset);
     const entryType = (() => {
       let bit = mode & 0b00000000000000001111000000000000;
       bit >>= 12;
@@ -117,23 +115,23 @@ function getCurrentIndex() {
     })();
 
     const filePermission = mode & 0b00000000000000000000000111111111;
-    off += 4;
+    offset += 4;
 
-    const uid = indexFile.readUInt32BE(off);
-    off += 4;
-    const gid = indexFile.readUInt32BE(off);
-    off += 4;
-    const fileSize = indexFile.readUInt32BE(off);
-    off += 4;
+    const uid = indexFile.readUInt32BE(offset);
+    offset += 4;
+    const gid = indexFile.readUInt32BE(offset);
+    offset += 4;
+    const fileSize = indexFile.readUInt32BE(offset);
+    offset += 4;
 
     // SHA (20 bytes)
-    if (off + 20 > indexFile.length) break;
-    const sha = indexFile.slice(off, off + 20);
-    off += 20;
+    if (offset + 20 > indexFile.length) break;
+    const sha = indexFile.slice(offset, offset + 20);
+    offset += 20;
 
     // flags (2 bytes)
-    if (off + 2 > indexFile.length) break;
-    const flags = indexFile.readUInt16BE(off);
+    if (offset + 2 > indexFile.length) break;
+    const flags = indexFile.readUInt16BE(offset);
     const assumeValid = (() => {
       let bit = flags & 0b1000000000000000;
       bit >>= 15;
@@ -150,22 +148,26 @@ function getCurrentIndex() {
       return bit;
     })();
     const nameLength = flags & 0b0000111111111111;
-    off += 2;
+    offset += 2;
 
     // 파일명 읽기
-    if (off + nameLength > indexFile.length) break;
-    const name = indexFile.toString("utf8", off, off + nameLength + 1);
-    off += nameLength;
+    if (offset + nameLength > indexFile.length) break;
+    const entryPathname = indexFile.toString(
+      "utf8",
+      offset,
+      offset + nameLength + 1
+    );
+    offset += nameLength;
 
     // null terminator 건너뛰기
-    // if (off < indexFile.length && indexFile[off] === 0) {
-    //   off++;
-    // }
+    if (offset < indexFile.length && indexFile[offset] === 0) {
+      offset++;
+    }
 
     // 8-byte 정렬까지 패딩 건너뛰기
-    const entryStart = off - nameLength - 1 - 2 - 20 - 40; // entry 시작점 계산
+    const entryStart = offset - nameLength - 1 - 2 - 20 - 40; // entry 시작점 계산
     const paddedSize = Math.ceil((62 + nameLength + 1) / 8) * 8;
-    off = entryStart + paddedSize;
+    offset = entryStart + paddedSize;
 
     const entry = new Entry({
       ctimeSec,
@@ -184,7 +186,7 @@ function getCurrentIndex() {
       extended,
       stage,
       nameLength,
-      entryPathname: name,
+      entryPathname,
     });
 
     index.addEntry(entry);
@@ -229,5 +231,5 @@ module.exports = {
   updateIndex,
   printIndex,
   catFile,
-  readEntriesFromIndex: getCurrentIndex,
+  getCurrentIndex,
 };
