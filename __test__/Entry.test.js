@@ -1,8 +1,7 @@
 const { hashObject } = require("../plumbings");
 const Entry = require("../types/Entry");
-const fs = require("fs");
 
-describe("Entry 클래스", () => {
+describe("Entry Class", () => {
   const testEntryBuffer1 = Buffer.concat([
     // ctime
     Buffer.from([0x68, 0xae, 0x89, 0x91, 0x31, 0x1c, 0x40, 0x53]),
@@ -76,7 +75,7 @@ describe("Entry 클래스", () => {
     };
   };
 
-  test("fromFileStats() 유효성 테스트 1 (testfile)", () => {
+  test("fromFileStats() generates valid entry 1", () => {
     const mockStats = createMockFileStats({
       dev: 16777231,
       ino: 4136877,
@@ -96,13 +95,13 @@ describe("Entry 클래스", () => {
       "testfile"
     );
 
-    // ctime, mtime, dev, ino는 비교 대상에서 제외
+    // Compare buffers except ctime, mtime, dev, ino (due to mismatch of fs.Stats and git)
     expect(
       Buffer.compare(testEntryBuffer1.slice(24), entry.toBuffer().slice(24))
     ).toEqual(0);
   });
 
-  test("객체 생성 테스트 2 (mytestfile)", () => {
+  test("fromFileStats() generates valid entry 2", () => {
     const mockStats = createMockFileStats({
       dev: 16777231,
       ino: 4136906,
@@ -122,7 +121,7 @@ describe("Entry 클래스", () => {
       "mytestfile"
     );
 
-    // ctime, mtime, dev, ino는 비교 대상에서 제외
+    // Compare buffers except ctime, mtime, dev, ino (due to mismatch of fs.Stats and git)
     expect(
       Buffer.compare(testEntryBuffer2.slice(24), entry.toBuffer().slice(24))
     ).toEqual(0);

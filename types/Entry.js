@@ -51,10 +51,6 @@ class Entry {
    * @returns {Entry}
    */
   static fromFileStats(stats, objectName, nameLength, entryPathname) {
-    if (!(stats instanceof Stats)) {
-      throw new Error("Invalid stats object");
-    }
-
     const isSymlink = stats.isSymbolicLink();
 
     return new Entry({
