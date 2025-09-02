@@ -3,7 +3,7 @@ const Entry = require("../types/Entry");
 const fs = require("fs");
 
 describe("Entry 클래스", () => {
-  const testfileBuffer = Buffer.concat([
+  const testEntryBuffer1 = Buffer.concat([
     // ctime
     Buffer.from([0x68, 0xae, 0x89, 0x91, 0x31, 0x1c, 0x40, 0x53]),
     // mtime
@@ -31,7 +31,7 @@ describe("Entry 클래스", () => {
     Buffer.from([0x74, 0x65, 0x73, 0x74, 0x66, 0x69, 0x6c, 0x65, 0x00, 0x00]),
   ]);
 
-  const mytestfileBuffer = Buffer.concat([
+  const testEntryBuffer2 = Buffer.concat([
     // ctime
     Buffer.from([0x68, 0xae, 0x89, 0xa2, 0x22, 0x87, 0xad, 0x91]),
     // mtime
@@ -62,35 +62,69 @@ describe("Entry 클래스", () => {
     ]),
   ]);
 
-  test("객체 생성 테스트 1 (testfile)", () => {
-    const fileStats = fs.lstatSync("testfile");
+  const createMockFileStats = (options) => {
+    return {
+      dev: options.dev,
+      ino: options.ino,
+      mode: options.mode,
+      uid: options.uid,
+      gid: options.gid,
+      size: options.size,
+      ctimeMs: options.ctimeMs,
+      mtimeMs: options.mtimeMs,
+      isSymbolicLink: options.isSymbolicLink,
+    };
+  };
+
+  test("fromFileStats() 유효성 테스트 1 (testfile)", () => {
+    const mockStats = createMockFileStats({
+      dev: 16777231,
+      ino: 4136877,
+      mode: 33188,
+      uid: 501,
+      gid: 20,
+      size: 16,
+      ctimeMs: 1756268945823.935,
+      mtimeMs: 1756268945823.935,
+      isSymbolicLink: () => false,
+    });
 
     const entry = Entry.fromFileStats(
-      fileStats,
-      hashObject(fs.readFileSync("testfile").toString(), "blob", null),
+      mockStats,
+      hashObject("can't touch this", "blob", null),
       "testfile".length,
       "testfile"
     );
 
     // ctime, mtime, dev, ino는 비교 대상에서 제외
     expect(
-      Buffer.compare(testfileBuffer.slice(24), entry.toBuffer().slice(24))
+      Buffer.compare(testEntryBuffer1.slice(24), entry.toBuffer().slice(24))
     ).toEqual(0);
   });
 
   test("객체 생성 테스트 2 (mytestfile)", () => {
-    const fileStats = fs.lstatSync("mytestfile");
+    const mockStats = createMockFileStats({
+      dev: 16777231,
+      ino: 4136906,
+      mode: 33188,
+      uid: 501,
+      gid: 20,
+      size: 23,
+      ctimeMs: 1756268962579.3171,
+      mtimeMs: 1756268962579.3171,
+      isSymbolicLink: () => false,
+    });
 
     const entry = Entry.fromFileStats(
-      fileStats,
-      hashObject(fs.readFileSync("mytestfile").toString(), "blob", null),
+      mockStats,
+      hashObject("don't touch this either", "blob", null),
       "mytestfile".length,
       "mytestfile"
     );
 
     // ctime, mtime, dev, ino는 비교 대상에서 제외
     expect(
-      Buffer.compare(mytestfileBuffer.slice(24), entry.toBuffer().slice(24))
+      Buffer.compare(testEntryBuffer2.slice(24), entry.toBuffer().slice(24))
     ).toEqual(0);
   });
 });
