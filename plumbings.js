@@ -8,13 +8,20 @@ const fs = require("fs");
 
 const Index = require("./types/Index");
 const Entry = require("./types/Entry");
+const Tree = require("./types/Tree");
 
 function initIndex() {
   const index = new Index();
   fs.writeFileSync(".git/index", index.toBuffer());
 }
 
-function hashObject(string, type = "blob", mode = "write") {
+/**
+ * @param {Buffer} content
+ * @param {string} type
+ * @param {string} mode
+ * @returns
+ */
+function hashObject(content, type = "blob", mode = "write") {
   if (
     type !== "blob" &&
     type !== "commit" &&
@@ -24,20 +31,22 @@ function hashObject(string, type = "blob", mode = "write") {
     throw new Error("Invalid type");
   }
 
-  const bytes = Buffer.byteLength(string, "utf8");
-  const header = `${type} ${bytes}\0`;
+  const bytes = Buffer.byteLength(content);
+  const header = Buffer.from(`${type} ${bytes}\0`);
   const sha = crypto
     .createHash("SHA1")
-    .update(header + string)
+    .update(Buffer.concat([header, content]))
     .digest("hex");
 
   if (mode === "write") {
     const dirName = sha.slice(0, 2);
     const fileName = sha.slice(2);
-    const compressed = zlib.deflateSync(Buffer.from(header + string));
+    const compressed = zlib.deflateSync(Buffer.concat([header, content]), {
+      level: 1,
+    });
 
     if (!fs.existsSync(`.git/objects/${dirName}`)) {
-      fs.mkdirSync(`.git/objects/${dirName}`, { recursive: true });
+      fs.mkdirSync(`.git/objects/${dirName}`);
     }
 
     fs.writeFileSync(`.git/objects/${dirName}/${fileName}`, compressed);
@@ -203,7 +212,7 @@ function catFile(hash) {
   const baseObjectsDir = ".git/objects";
 
   let object;
-  let unzippedObject;
+  let unzippedObjectBuffer;
 
   const dir = fs.readdirSync(baseObjectsDir);
 
@@ -214,7 +223,7 @@ function catFile(hash) {
     const hashDir = fs.readdirSync(baseObjectsDir + "/" + dirName);
     const hashFile = hashDir.find((object) => object.startsWith(fileName));
     object = fs.readFileSync(baseObjectsDir + "/" + dirName + "/" + hashFile);
-    unzippedObject = zlib.inflateSync(object);
+    unzippedObjectBuffer = zlib.inflateSync(object);
   }
 
   if (!object) {
@@ -222,7 +231,70 @@ function catFile(hash) {
     return;
   }
 
-  console.log(unzippedObject.toString());
+  if (
+    unzippedObjectBuffer[0] === 0x74 &&
+    unzippedObjectBuffer[1] === 0x72 &&
+    unzippedObjectBuffer[2] === 0x65 &&
+    unzippedObjectBuffer[3] === 0x65
+  ) {
+    let header = "";
+    let offset = 0;
+    const result = [];
+
+    while (unzippedObjectBuffer[offset] !== 0) {
+      header += String.fromCharCode(unzippedObjectBuffer[offset]);
+      offset++;
+    }
+
+    offset++;
+
+    while (offset < unzippedObjectBuffer.length) {
+      let permission = "";
+      let fileName = "";
+      let hash = "";
+
+      // 스페이스를 만나기 전까지
+      while (unzippedObjectBuffer[offset] !== 0x20) {
+        permission += String.fromCharCode(unzippedObjectBuffer[offset]);
+        offset++;
+      }
+
+      offset++;
+
+      while (unzippedObjectBuffer[offset] !== 0) {
+        fileName += String.fromCharCode(unzippedObjectBuffer[offset]);
+        offset++;
+      }
+
+      offset++;
+
+      hash = unzippedObjectBuffer.slice(offset, offset + 20).toString("hex");
+
+      offset += 20;
+
+      result.push({ permission, fileName, hash });
+    }
+
+    console.log(header);
+    console.table(result);
+  } else {
+    // blob | commit
+    console.log(unzippedObjectBuffer.toString());
+  }
+}
+
+/**
+ * Writes tree with the index entries.
+ */
+function writeTree() {
+  const currentIndex = getCurrentIndex();
+  const tree = new Tree(hashObject);
+
+  currentIndex.entries.forEach((entry) => {
+    tree.addEntry(entry);
+  });
+
+  return tree.getHash();
 }
 
 module.exports = {
@@ -232,4 +304,5 @@ module.exports = {
   printIndex,
   catFile,
   getCurrentIndex,
+  writeTree,
 };

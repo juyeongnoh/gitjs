@@ -1,7 +1,7 @@
 const { hashObject } = require("../plumbings");
 const Entry = require("../types/Entry");
 
-describe("Entry Class", () => {
+describe("Entry 클래스", () => {
   const testEntryBuffer1 = Buffer.concat([
     // ctime
     Buffer.from([0x68, 0xae, 0x89, 0x91, 0x31, 0x1c, 0x40, 0x53]),
@@ -75,7 +75,7 @@ describe("Entry Class", () => {
     };
   };
 
-  test("fromFileStats() generates valid entry 1", () => {
+  test("fromFileStats() 유효성 테스트 1 (testfile)", () => {
     const mockStats = createMockFileStats({
       dev: 16777231,
       ino: 4136877,
@@ -88,20 +88,26 @@ describe("Entry Class", () => {
       isSymbolicLink: () => false,
     });
 
+    // content: can't touch this
+    const testfile = Buffer.from([
+      0x63, 0x61, 0x6e, 0x27, 0x74, 0x20, 0x74, 0x6f, 0x75, 0x63, 0x68, 0x20,
+      0x74, 0x68, 0x69, 0x73,
+    ]);
+
     const entry = Entry.fromFileStats(
       mockStats,
-      hashObject("can't touch this", "blob", null),
+      hashObject(testfile, "blob", null),
       "testfile".length,
       "testfile"
     );
 
-    // Compare buffers except ctime, mtime, dev, ino (due to mismatch of fs.Stats and git)
+    // ctime, mtime, dev, ino는 비교 대상에서 제외
     expect(
       Buffer.compare(testEntryBuffer1.slice(24), entry.toBuffer().slice(24))
     ).toEqual(0);
   });
 
-  test("fromFileStats() generates valid entry 2", () => {
+  test("객체 생성 테스트 2 (mytestfile)", () => {
     const mockStats = createMockFileStats({
       dev: 16777231,
       ino: 4136906,
@@ -114,14 +120,20 @@ describe("Entry Class", () => {
       isSymbolicLink: () => false,
     });
 
+    // content: don't touch this either
+    const mytestfile = Buffer.from([
+      0x64, 0x6f, 0x6e, 0x27, 0x74, 0x20, 0x74, 0x6f, 0x75, 0x63, 0x68, 0x20,
+      0x74, 0x68, 0x69, 0x73, 0x20, 0x65, 0x69, 0x74, 0x68, 0x65, 0x72,
+    ]);
+
     const entry = Entry.fromFileStats(
       mockStats,
-      hashObject("don't touch this either", "blob", null),
+      hashObject(mytestfile, "blob", null),
       "mytestfile".length,
       "mytestfile"
     );
 
-    // Compare buffers except ctime, mtime, dev, ino (due to mismatch of fs.Stats and git)
+    // ctime, mtime, dev, ino는 비교 대상에서 제외
     expect(
       Buffer.compare(testEntryBuffer2.slice(24), entry.toBuffer().slice(24))
     ).toEqual(0);

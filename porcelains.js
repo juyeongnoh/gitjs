@@ -2,7 +2,7 @@
 // porcelain: 자기(磁器)
 // 자기처럼 매끈하고 사용하기 좋은 명령어 모음
 const fs = require("fs");
-const { hashObject, updateIndex, initIndex } = require("./plumbings");
+const { hashObject, updateIndex } = require("./plumbings");
 
 /**
  * init()
@@ -35,8 +35,8 @@ const init = () => {
  */
 const add = (filePathnames) => {
   filePathnames.forEach((filePathname) => {
-    const fileString = fs.readFileSync(filePathname).toString();
-    const hash = hashObject(fileString, "blob");
+    const file = fs.readFileSync(filePathname);
+    const hash = hashObject(file, "blob", "write");
     updateIndex(filePathname, hash);
   });
 };
