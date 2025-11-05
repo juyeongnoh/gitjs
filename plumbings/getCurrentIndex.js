@@ -1,14 +1,15 @@
-const fs = require("fs");
-const Index = require("../types/Index");
-const Entry = require("../types/Entry");
+import { existsSync, readFileSync } from "fs";
+import Index from "../types/Index.js";
+import Entry from "../types/Entry.js";
+import { initIndex } from "./initIndex.js";
 
 function getCurrentIndex() {
   // index 파일이 없으면 새로운 빈 index 반환
-  if (!fs.existsSync(".git/index")) {
+  if (!existsSync(".git/index")) {
     initIndex();
   }
 
-  const indexFile = fs.readFileSync(".git/index");
+  const indexFile = readFileSync(".git/index");
   const index = new Index();
 
   // Signature, Version 스킵
@@ -127,4 +128,4 @@ function getCurrentIndex() {
   return index;
 }
 
-module.exports = { getCurrentIndex };
+export { getCurrentIndex };

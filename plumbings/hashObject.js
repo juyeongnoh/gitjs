@@ -1,6 +1,6 @@
-const crypto = require("crypto");
-const zlib = require("zlib");
-const fs = require("fs");
+import { createHash } from "crypto";
+import { deflateSync } from "zlib";
+import { existsSync, mkdirSync, writeFileSync } from "fs";
 
 /**
  * @param {Buffer} content
@@ -20,26 +20,25 @@ function hashObject(content, type = "blob", mode = "write") {
 
   const bytes = Buffer.byteLength(content);
   const header = Buffer.from(`${type} ${bytes}\0`);
-  const sha = crypto
-    .createHash("SHA1")
+  const sha = createHash("SHA1")
     .update(Buffer.concat([header, content]))
     .digest("hex");
 
   if (mode === "write") {
     const dirName = sha.slice(0, 2);
     const fileName = sha.slice(2);
-    const compressed = zlib.deflateSync(Buffer.concat([header, content]), {
+    const compressed = deflateSync(Buffer.concat([header, content]), {
       level: 1,
     });
 
-    if (!fs.existsSync(`.git/objects/${dirName}`)) {
-      fs.mkdirSync(`.git/objects/${dirName}`);
+    if (!existsSync(`.git/objects/${dirName}`)) {
+      mkdirSync(`.git/objects/${dirName}`);
     }
 
-    fs.writeFileSync(`.git/objects/${dirName}/${fileName}`, compressed);
+    writeFileSync(`.git/objects/${dirName}/${fileName}`, compressed);
   }
 
   return sha;
 }
 
-module.exports = { hashObject };
+export { hashObject };

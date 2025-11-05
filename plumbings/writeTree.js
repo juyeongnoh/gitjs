@@ -1,5 +1,5 @@
-const Tree = require("../types/Tree");
-const { getCurrentIndex } = require("./getCurrentIndex");
+import Tree from "../types/Tree.js";
+import { getCurrentIndex } from "./getCurrentIndex.js";
 
 /**
  * Writes tree with the index entries.
@@ -17,4 +17,4 @@ function writeTree() {
   return tree.getHash();
 }
 
-module.exports = { writeTree };
+export { writeTree };

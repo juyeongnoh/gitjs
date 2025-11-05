@@ -1,5 +1,3 @@
-const { BigIntStats } = require("node:fs");
-
 /**
  * Entry (Version 2)
  */
@@ -44,7 +42,7 @@ class Entry {
 
   /**
    * Create an Entry instance from file stats.
-   * @param {BigIntStats} stats
+   * @param {import("node:fs").BigIntStats} stats
    * @param {string} objectName - 20 bytes of file hash (ex. `blob 12\0Hello world!`)
    * @param {number} nameLength - Length of the file name
    * @param {string} entryPathname - File path (with null terminator)
@@ -148,4 +146,4 @@ class Entry {
   isValid() {}
 }
 
-module.exports = Entry;
+export default Entry;

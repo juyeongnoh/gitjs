@@ -1,11 +1,11 @@
-const readline = require("readline");
-const { catFile } = require("./plumbings/catFile");
-const { printIndex } = require("./plumbings/printIndex");
-const { writeTree } = require("./plumbings/writeTree");
-const { init } = require("./porcelains/init");
-const { add } = require("./porcelains/add");
+import { createInterface } from "readline";
+import { catFile } from "./plumbings/catFile.js";
+import { printIndex } from "./plumbings/printIndex.js";
+import { writeTree } from "./plumbings/writeTree.js";
+import { init } from "./porcelains/init.js";
+import { add } from "./porcelains/add.js";
 
-const rl = readline.createInterface({
+const rl = createInterface({
   input: process.stdin,
   output: process.stdout,
 });

@@ -1,8 +1,8 @@
-const { getCurrentIndex } = require("./getCurrentIndex");
+import { getCurrentIndex } from "./getCurrentIndex.js";
 
 function printIndex() {
   const currentIndex = getCurrentIndex();
   currentIndex.prettyPrint();
 }
 
-module.exports = { printIndex };
+export { printIndex };

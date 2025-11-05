@@ -1,9 +1,9 @@
-const fs = require("fs");
-const Index = require("../types/Index");
+import { writeFileSync } from "fs";
+import Index from "../types/Index.js";
 
 function initIndex() {
   const index = new Index();
-  fs.writeFileSync(".git/index", index.toBuffer());
+  writeFileSync(".git/index", index.toBuffer());
 }
 
-module.exports = { initIndex };
+export { initIndex };

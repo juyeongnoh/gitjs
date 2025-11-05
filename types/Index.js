@@ -1,5 +1,5 @@
-const crypto = require("crypto");
-const Entry = require("./Entry");
+import { createHash } from "crypto";
+import Entry from "./Entry.js";
 
 /** Index version 2 */
 class Index {
@@ -54,7 +54,7 @@ class Index {
       entriesBuffer,
     ]);
 
-    const checksum = crypto.createHash("sha1").update(contentBuffer).digest();
+    const checksum = createHash("sha1").update(contentBuffer).digest();
 
     return Buffer.concat([contentBuffer, checksum]);
   }
@@ -78,7 +78,7 @@ class Index {
       entriesBuffer,
     ]);
 
-    const checksum = crypto.createHash("sha1").update(contentBuffer).digest();
+    const checksum = createHash("sha1").update(contentBuffer).digest();
 
     return checksum;
   }
@@ -100,4 +100,4 @@ class Index {
   }
 }
 
-module.exports = Index;
+export default Index;

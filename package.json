@@ -3,13 +3,13 @@
   "version": "0.0.1",
   "description": "The Git commands implemented in JavaScript.",
   "main": "index.js",
+  "type": "module",
   "scripts": {
-    "test": "jest",
-    "test:watch": "jest --watch"
+    "test": "vitest"
   },
   "author": "Juyeong \"James\" Noh",
   "license": "ISC",
   "devDependencies": {
-    "jest": "^30.0.5"
+    "vitest": "^4.0.7"
   }
 }

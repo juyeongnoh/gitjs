@@ -1,6 +1,7 @@
-const { hashObject } = require("../plumbings/hashObject");
-const Entry = require("../types/Entry");
-const Index = require("../types/Index");
+import { describe, expect, test } from "vitest";
+import { hashObject } from "../plumbings/hashObject.js";
+import Index from "../types/Index.js";
+import Entry from "../types/Entry.js";
 
 describe("Index", () => {
   const indexSample = Buffer.concat([

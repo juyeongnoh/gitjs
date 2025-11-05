@@ -1,9 +1,9 @@
-const Entry = require("./Entry");
+import { hashObject } from "../plumbings/hashObject.js";
+import Entry from "./Entry.js";
 
 class Tree {
-  constructor(hashObject) {
+  constructor() {
     this.tree = {};
-    this.hashObject = hashObject;
   }
 
   /**
@@ -76,7 +76,7 @@ class Tree {
       }
     });
 
-    return this.hashObject(Buffer.concat(res), "tree", "write");
+    return hashObject(Buffer.concat(res), "tree", "write");
   }
 }
 // 이전
@@ -85,4 +85,4 @@ class Tree {
 //'3d856a7b2e9a070479dbcc84c8cc50e8b33fa86f' root tree
 // 이후
 // "1980a89f72a89dca7738e3150344f07e09a7eab9" root
-module.exports = Tree;
+export default Tree;

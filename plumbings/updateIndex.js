@@ -1,14 +1,14 @@
-const Entry = require("../types/Entry");
-const { getCurrentIndex } = require("./getCurrentIndex");
-const fs = require("fs");
+import Entry from "../types/Entry.js";
+import { getCurrentIndex } from "./getCurrentIndex.js";
+import { existsSync, lstatSync, writeFileSync } from "fs";
 
 function updateIndex(filePathname, hash) {
-  if (!fs.existsSync(filePathname)) {
+  if (!existsSync(filePathname)) {
     throw new Error(`File not found: ${filePathname}`);
   }
 
   const currentIndex = getCurrentIndex();
-  const fileStats = fs.lstatSync(filePathname, { bigint: true });
+  const fileStats = lstatSync(filePathname, { bigint: true });
   const entry = Entry.fromFileStats(
     fileStats,
     hash,
@@ -18,7 +18,7 @@ function updateIndex(filePathname, hash) {
   currentIndex.addEntry(entry);
 
   // index 파일 업데이트
-  fs.writeFileSync(".git/index", currentIndex.toBuffer());
+  writeFileSync(".git/index", currentIndex.toBuffer());
 }
 
-module.exports = { updateIndex };
+export { updateIndex };

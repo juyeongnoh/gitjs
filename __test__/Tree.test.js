@@ -1,4 +1,5 @@
-const Entry = require("../types/Entry");
+import { describe, test } from "vitest";
+import Entry from "../types/Entry.js";
 
 describe("Tree Class", () => {
   test("saves file in hierarchical structure", () => {

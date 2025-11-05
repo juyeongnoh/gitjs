@@ -1,4 +1,5 @@
-const fs = require("fs");
+import { readdirSync, readFileSync } from "fs";
+import { inflateSync } from "zlib";
 
 /**
  * @param {string} hash
@@ -14,16 +15,16 @@ function catFile(hash) {
   let object;
   let unzippedObjectBuffer;
 
-  const dir = fs.readdirSync(baseObjectsDir);
+  const dir = readdirSync(baseObjectsDir);
 
   const dirName = hash.slice(0, 2);
   const fileName = hash.slice(2);
 
   if (dir.includes(dirName)) {
-    const hashDir = fs.readdirSync(baseObjectsDir + "/" + dirName);
+    const hashDir = readdirSync(baseObjectsDir + "/" + dirName);
     const hashFile = hashDir.find((object) => object.startsWith(fileName));
-    object = fs.readFileSync(baseObjectsDir + "/" + dirName + "/" + hashFile);
-    unzippedObjectBuffer = zlib.inflateSync(object);
+    object = readFileSync(baseObjectsDir + "/" + dirName + "/" + hashFile);
+    unzippedObjectBuffer = inflateSync(object);
   }
 
   if (!object) {
@@ -83,4 +84,4 @@ function catFile(hash) {
   }
 }
 
-module.exports = { catFile };
+export { catFile };
