@@ -1,4 +1,4 @@
-const { Stats } = require("node:fs");
+const { BigIntStats } = require("node:fs");
 
 /**
  * Entry (Version 2)
@@ -44,7 +44,7 @@ class Entry {
 
   /**
    * Create an Entry instance from file stats.
-   * @param {Stats} stats
+   * @param {BigIntStats} stats
    * @param {string} objectName - 20 bytes of file hash (ex. `blob 12\0Hello world!`)
    * @param {number} nameLength - Length of the file name
    * @param {string} entryPathname - File path (with null terminator)
@@ -54,17 +54,17 @@ class Entry {
     const isSymlink = stats.isSymbolicLink();
 
     return new Entry({
-      ctimeSec: parseInt(stats.ctimeMs / 1000),
-      ctimeNsec: parseInt((stats.ctimeMs % 1000) * 1e6),
-      mtimeSec: parseInt(stats.mtimeMs / 1000),
-      mtimeNsec: parseInt((stats.mtimeMs % 1000) * 1e6),
-      dev: stats.dev,
-      ino: stats.ino,
+      ctimeSec: parseInt(stats.ctime.getTime() / 1000),
+      ctimeNsec: parseInt(stats.ctimeNs % 1_000_000_000n),
+      mtimeSec: parseInt(stats.mtime.getTime() / 1000),
+      mtimeNsec: parseInt(stats.mtimeNs % 1_000_000_000n),
+      dev: parseInt(stats.dev),
+      ino: parseInt(stats.ino),
       entryType: isSymlink ? "SYMLINK" : "REGULAR_FILE",
-      filePermission: isSymlink ? 0 : stats.mode & 0o777,
-      uid: stats.uid,
-      gid: stats.gid,
-      fileSize: isSymlink ? 0 : stats.size & 0xffffffff,
+      filePermission: isSymlink ? 0 : parseInt(stats.mode) & 0o777,
+      uid: parseInt(stats.uid),
+      gid: parseInt(stats.gid),
+      fileSize: isSymlink ? 0 : parseInt(stats.size) & 0xffffffff,
       objectName: objectName,
       assumeValid: false,
       extended: false,

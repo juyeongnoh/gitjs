@@ -61,7 +61,7 @@ function updateIndex(filePathname, hash) {
   }
 
   const currentIndex = getCurrentIndex();
-  const fileStats = fs.lstatSync(filePathname);
+  const fileStats = fs.lstatSync(filePathname, { bigint: true });
   const entry = Entry.fromFileStats(
     fileStats,
     hash,

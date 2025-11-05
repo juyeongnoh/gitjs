@@ -36,8 +36,8 @@ const init = () => {
 const add = (filePathnames) => {
   filePathnames.forEach((filePathname) => {
     const file = fs.readFileSync(filePathname);
-    const hash = hashObject(file, "blob", "write");
-    updateIndex(filePathname, hash);
+    const sha = hashObject(file, "blob", "write");
+    updateIndex(filePathname, sha);
   });
 };
 

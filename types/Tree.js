@@ -38,15 +38,17 @@ class Tree {
     }
   }
 
-  /**
-   * @param {object} tree
-   * @returns
-   */
   getHash(tree = this.tree) {
     const res = [];
 
     const objectNames = Object.keys(tree);
     objectNames.sort((a, b) => Buffer.compare(Buffer.from(a), Buffer.from(b)));
+
+    // 0 4 0 0 0 0
+    // 0x30 0x34 0x30 0x30 0x30 0x30
+
+    // 1 0 0 6 4 4
+    // 0x31	0x30	0x30	0x36	0x34	0x34
 
     objectNames.forEach((objectName) => {
       const isDirectory = !tree[objectName].objectName;
@@ -77,5 +79,10 @@ class Tree {
     return this.hashObject(Buffer.concat(res), "tree", "write");
   }
 }
-
+// 이전
+//'53eb32ac59a83a9b9c9c8c25ac7d6c97e896ee47' test/ tree
+//'0e6c44c5768026e6064a7e361a3137cebc3b2495' types/ tree
+//'3d856a7b2e9a070479dbcc84c8cc50e8b33fa86f' root tree
+// 이후
+// "1980a89f72a89dca7738e3150344f07e09a7eab9" root
 module.exports = Tree;
