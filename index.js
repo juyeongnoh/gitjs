@@ -1,6 +1,9 @@
 const readline = require("readline");
-const { init, add } = require("./porcelains");
-const { catFile, printIndex, writeTree } = require("./plumbings");
+const { catFile } = require("./plumbings/catFile");
+const { printIndex } = require("./plumbings/printIndex");
+const { writeTree } = require("./plumbings/writeTree");
+const { init } = require("./porcelains/init");
+const { add } = require("./porcelains/add");
 
 const rl = readline.createInterface({
   input: process.stdin,

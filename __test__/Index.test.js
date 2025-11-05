@@ -1,4 +1,4 @@
-const { hashObject } = require("../plumbings");
+const { hashObject } = require("../plumbings/hashObject");
 const Entry = require("../types/Entry");
 const Index = require("../types/Index");
 

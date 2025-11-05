@@ -1,6 +1,5 @@
-const { hashObject } = require("../plumbings");
+const { hashObject } = require("../plumbings/hashObject");
 const Entry = require("../types/Entry");
-const fs = require("fs");
 
 describe("Entry 클래스", () => {
   const testEntryBuffer1 = Buffer.concat([
@@ -41,7 +40,6 @@ describe("Entry 클래스", () => {
   ]);
 
   test("fromFileStats() 유효성 테스트 (testfile)", () => {
-    // content: can't touch this
     // content: can't touch this
     const testfile = Buffer.from([
       0x63, 0x61, 0x6e, 0x27, 0x74, 0x20, 0x74, 0x6f, 0x75, 0x63, 0x68, 0x20,

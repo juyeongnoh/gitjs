@@ -1,6 +1,4 @@
-const { hashObject } = require("../plumbings");
-const Entry = require("../types/Entry");
-const Index = require("../types/Index");
+const { hashObject } = require("../plumbings/hashObject");
 
 describe("hashObject()", () => {
   // content: can't touch this
