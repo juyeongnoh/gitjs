@@ -44,20 +44,12 @@ class Tree {
     const objectNames = Object.keys(tree);
     objectNames.sort((a, b) => Buffer.compare(Buffer.from(a), Buffer.from(b)));
 
-    // 0 4 0 0 0 0
-    // 0x30 0x34 0x30 0x30 0x30 0x30
-
-    // 1 0 0 6 4 4
-    // 0x31	0x30	0x30	0x36	0x34	0x34
-
     objectNames.forEach((objectName) => {
       const isDirectory = !tree[objectName].objectName;
 
       if (isDirectory) {
         // 040000 + space
-        const modeBuffer = Buffer.from([
-          0x30, 0x34, 0x30, 0x30, 0x30, 0x30, 0x20,
-        ]);
+        const modeBuffer = Buffer.from([0x34, 0x30, 0x30, 0x30, 0x30, 0x20]);
         const nameBuffer = Buffer.from(objectName.slice(0, -1) + "\0");
         const hashBuffer = Buffer.alloc(20);
         hashBuffer.write(this.getHash(tree[objectName]), "hex");
