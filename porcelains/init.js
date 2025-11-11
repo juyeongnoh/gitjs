@@ -1,4 +1,5 @@
 import { readdirSync, mkdirSync, writeFileSync } from "fs";
+import { join } from "node:path";
 
 /**
  * init()
@@ -6,23 +7,25 @@ import { readdirSync, mkdirSync, writeFileSync } from "fs";
  * HEAD, index, objects/, refs/
  */
 const init = () => {
+  const gitDir = join(process.cwd(), ".git");
+
   // .git이 존재하지 않는 경우에만 initialize
   try {
-    readdirSync(".git");
+    readdirSync(gitDir);
   } catch {
-    const HEAD = "ref: refs/heads/main";
+    const defaultRef = join("refs", "heads", "main");
 
-    mkdirSync(".git");
+    mkdirSync(gitDir);
 
-    mkdirSync(".git/objects");
-    mkdirSync(".git/objects/info");
-    mkdirSync(".git/objects/pack");
+    mkdirSync(join(gitDir, "objects"));
+    mkdirSync(join(gitDir, "objects", "info"));
+    mkdirSync(join(gitDir, "objects", "pack"));
 
-    mkdirSync(".git/refs");
-    mkdirSync(".git/refs/heads");
-    mkdirSync(".git/refs/tags");
+    mkdirSync(join(gitDir, "refs"));
+    mkdirSync(join(gitDir, "refs", "heads"));
+    mkdirSync(join(gitDir, "refs", "tags"));
 
-    writeFileSync(".git/HEAD", HEAD);
+    writeFileSync(join(gitDir, "HEAD"), `ref: ${defaultRef}`);
   }
 };
 
