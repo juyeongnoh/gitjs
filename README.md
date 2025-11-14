@@ -1,5 +1,7 @@
 # gitjs
 
+한국어 | [English](https://github.com/juyeongnoh/gitjs/blob/main/README-en.md)
+
 ## 🎯 프로젝트 목표
 
 Node.js의 fs 모듈과 Buffer를 활용하여, Git의 내부 동작 원리를 바닥부터 직접 구현해보며 학습

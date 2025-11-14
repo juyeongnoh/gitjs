@@ -1,5 +1,7 @@
 # gitjs
 
+[한국어](https://github.com/juyeongnoh/gitjs/blob/main/README.md) | English
+
 ## 🎯 Project Goal
 
 To learn the internal workings of Git by implementing them from scratch using Node.js's fs module and Buffer.
