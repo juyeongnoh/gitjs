@@ -52,7 +52,6 @@ branch -d my-branch    // my-branch 삭제
 ### Plumbings (내부 로직)
 
 - git object 생성 함수 ([/plumbings/hashObject.js](https://github.com/juyeongnoh/gitjs/blob/main/plumbings/hashObject.js))
-
   - 파일의 byteLength 값 계산하여 헤더 추가
   - zlib 압축 및 SHA 해시 생성
 
@@ -71,7 +70,6 @@ branch -d my-branch    // my-branch 삭제
   - Index Entry 추가 시 재귀적으로 JS Object 기반 디렉토리 구조 생성
   - Buffer로 변환 기능
 - Commit 오브젝트 클래스 ([/types/Commit.js](https://github.com/juyeongnoh/gitjs/blob/main/types/Commit.js))
-
   - Buffer로 변환 기능
 
 ## 📚 배운 점
