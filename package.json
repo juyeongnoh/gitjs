@@ -1,7 +1,7 @@
 {
   "name": "gitjs",
-  "version": "0.0.1",
-  "description": "The Git commands implemented in JavaScript.",
+  "version": "0.1.0",
+  "description": "Node.js로 직접 구현한 Git",
   "main": "index.js",
   "type": "module",
   "scripts": {
