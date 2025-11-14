@@ -152,6 +152,8 @@ branch -d my-branch    // my-branch 삭제
 - 하지만 해시값을 일일이 입력해가며 열람하다 보니 개발 생산성이 떨어지는 문제가 있었다.
 - 직접 만든 오브젝트의 내용을 실제 git과 비교하고 싶은데, 이러한 점 때문에 구현에 많은 시간이 들었다.
 - 그래서 git object를 만드는 로직을 AI에게 넘겨주어 vscode 상에서 바로 읽을 수 있는 익스텐션을 만들어서 작업했다.
+- 익스텐션: https://marketplace.visualstudio.com/items?itemName=JamesNoh.git-objects-viewer
+
   ![git-object-vscode-extension](https://github.com/user-attachments/assets/2eab2d44-81d5-478b-8b35-e01323ddb62a)
 
 ## ⚒️ 어려웠던 점

@@ -170,6 +170,8 @@ branch -d my-branch    // Delete my-branch
 - I wanted to compare the contents of the objects I made with actual git, but this process took a lot of time.
 
 - So, I created an extension that can read them directly in VSCode to improve my workflow. (I handed over the logic for decompressing git objects to an AI).
+
+- See: https://marketplace.visualstudio.com/items?itemName=JamesNoh.git-objects-viewer
   ![git-object-vscode-extension](https://github.com/user-attachments/assets/2eab2d44-81d5-478b-8b35-e01323ddb62a)
 
 ## ⚒️ Difficulties Encountered
