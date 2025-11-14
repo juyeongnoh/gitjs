@@ -2,7 +2,7 @@
 
 ## 🎯 프로젝트 목표
 
-Git의 내부 동작 원리를 Node.js로 직접 구현하며 학습하기 위함
+Node.js의 fs 모듈과 Buffer를 활용하여, Git의 내부 동작 원리를 바닥부터 구현한 프로젝트
 
 ## 🏃 실행하기
 
@@ -74,7 +74,7 @@ branch -d my-branch    // my-branch 삭제
 
   - Buffer로 변환 기능
 
-## ✨ 배운 점
+## 📚 배운 점
 
 ### SHA 해시 기반 파일 관리의 이점
 
@@ -104,6 +104,13 @@ branch -d my-branch    // my-branch 삭제
   | 2b785f | Hello world~ |
 
 - git에서는 파일(blob), 디렉토리(tree), 커밋(commit)을 모두 SHA 해시하여 관리한다.
+  ```mermaid
+  graph LR
+    Commit["Commit[ab78e]: my-commit"] -->|tree| Tree1["Tree[d4fe5]: /"]
+    Tree1 -->|tree| Tree2["Tree[8cea1]: src"]
+    Tree2 -->|blob| Blob1["Blob[b4d1a]: main.js"]
+    Tree1 -->|blob| Blob2["Blob[118ce]: README.md"]
+  ```
 - 이 방식의 이점은 이전의 연산한 값을 그대로 사용할 수 있다는 의미이다.
 - 텍스트 파일을 수정하여 다시 "Hello world!"로 돌아가더라도 이미 이전에 연산한 해시가 존재하기 때문에 중복저장하지 않는다.
 - 그렇기 때문에 저장소를 비교적 가볍게 관리할 수 있다.
@@ -138,6 +145,15 @@ branch -d my-branch    // my-branch 삭제
 - 그렇기 때문에, 해시를 2자, 38자로 끊어서 저장하면 최대 4,177,920개의 오브젝트까지 저장할 수 있게 된다.
 - (2자로 표현할 수 있는 16진수 범위(00 ~ FF => 255) \* 2^14 = 4,177,920)
 
+## ✨ 간편한 디버깅을 위한 vscode 익스텐션 구현
+
+- git object는 zlib으로 압축된 데이터이기 때문에 내용을 열람하려면 아래 명령어를 입력해야한다.
+  - `git cat-file -p 020a23`
+- 하지만 해시값을 일일이 입력해가며 열람하다 보니 개발 생산성이 떨어지는 문제가 있었다.
+- 직접 만든 오브젝트의 내용을 실제 git과 비교하고 싶은데, 이러한 점 때문에 구현에 많은 시간이 들었다.
+- 그래서 git object를 만드는 로직을 AI에게 넘겨주어 vscode 상에서 바로 읽을 수 있는 익스텐션을 만들어서 작업했다.
+  ![git-object-vscode-extension](https://github.com/user-attachments/assets/2eab2d44-81d5-478b-8b35-e01323ddb62a)
+
 ## ⚒️ 어려웠던 점
 
 ### Buffer 자료구조를 통한 비트 단위 데이터 관리
@@ -159,15 +175,6 @@ branch -d my-branch    // my-branch 삭제
   entryTypeAndUnused = entryTypeAndUnused << 12;
   modeBuffer.writeUInt32BE(entryTypeAndUnused | this.filePermission);
   ```
-
-### git object 파일 열람의 어려움
-
-- git object는 zlib으로 압축된 데이터이기 때문에 내용을 열람하려면 아래 명령어를 입력해야한다.
-  - `git cat-file -p 020a23`
-- 하지만 해시값을 일일이 입력해가며 파일을 열람하는 것은 쉬운 일이 아니다.
-- 직접 만든 오브젝트의 내용을 실제 git과 비교하고 싶은데, 이러한 점 때문에 구현에 많은 시간이 들었다.
-- 그래서 git object를 만드는 로직을 AI에게 넘겨주어 vscode 상에서 바로 읽을 수 있는 익스텐션을 만들어서 작업했다.
-  ![git-object-vscode-extension](https://github.com/user-attachments/assets/2eab2d44-81d5-478b-8b35-e01323ddb62a)
 
 ## ❌ 한계 및 미구현
 
